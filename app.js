@@ -16,6 +16,7 @@ const birthdayTextEl = document.getElementById("birthday-text");
 const wishDoneBtn = document.getElementById("wish-done");
 const birthdayActionsEl = document.getElementById("birthday-actions");
 const birthdayReplayBtn = document.getElementById("birthday-replay");
+const birthdayOpenLetterBtn = document.getElementById("birthday-open-letter");
 const progressText = document.getElementById("progress-text");
 const progressBar = document.getElementById("progress-bar");
 const prevBtn = document.getElementById("prev-btn");
@@ -24,6 +25,7 @@ const playPauseBtn = document.getElementById("play-pause-btn");
 const iconPlay = playPauseBtn.querySelector(".icon-play");
 const iconPause = playPauseBtn.querySelector(".icon-pause");
 const toggleViewBtn = document.getElementById("toggle-view-btn");
+if (toggleViewBtn) toggleViewBtn.remove();
 const fullLetterView = document.getElementById("full-letter-view");
 const closeLetterBtn = document.getElementById("close-letter-btn");
 const fullLetterContent = document.getElementById("full-letter-content");
@@ -177,7 +179,7 @@ function goNext() {
     return;
   }
 
-  enterBirthdayScene();
+  enterBirthdayScene({ keepAudio: true });
 }
 
 
@@ -218,10 +220,12 @@ function stopBirthday() {
   if (birthdayTextEl) birthdayTextEl.textContent = "";
 }
 
-function enterBirthdayScene() {
+function enterBirthdayScene(options = {}) {
   if (mode === "birthday") return;
 
-  stopAutoPlay();
+  const { keepAudio = false } = options;
+
+  stopAutoPlay({ keepAudio });
   setMode("birthday");
 
   if (!cakeCanvas || !birthdayTextEl) return;
@@ -357,34 +361,90 @@ function enterBirthdayScene() {
     if (cakeAlpha > 0.02) {
       ctx.save();
       ctx.globalAlpha = cakeAlpha;
-      ctx.strokeStyle = "rgba(120, 220, 255, 0.35)";
-      ctx.lineWidth = 1.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
 
-      const baseW = scale * 1.9;
-      const baseH = scale * 0.55;
-      const baseX = centerX - baseW / 2;
-      const baseY = centerY + scale * 0.2;
-      drawRoundedRect(baseX, baseY, baseW, baseH, scale * 0.08);
+      ctx.strokeStyle = "rgba(120, 220, 255, 0.35)";
+      ctx.lineWidth = 2;
+      const plateY = centerY + scale * 0.55;
+      ctx.beginPath();
+      ctx.ellipse(centerX, plateY, scale * 1.1, scale * 0.12, 0, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.strokeStyle = "rgba(255, 180, 220, 0.35)";
-      const topW = scale * 1.3;
-      const topH = scale * 0.4;
-      const topX = centerX - topW / 2;
-      const topY = baseY - topH * 0.85;
-      drawRoundedRect(topX, topY, topW, topH, scale * 0.08);
+      ctx.lineWidth = 1.5;
+      const tier1W = scale * 1.6;
+      const tier1H = scale * 0.45;
+      const tier1X = centerX - tier1W / 2;
+      const tier1Y = plateY - tier1H;
+      drawRoundedRect(tier1X, tier1Y, tier1W, tier1H, scale * 0.06);
       ctx.stroke();
 
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-      ctx.lineWidth = 1;
-      for (let i = -2; i <= 2; i++) {
-        const cx = centerX + i * (scale * 0.22);
+      ctx.save();
+      ctx.globalAlpha = cakeAlpha * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(tier1X + tier1W * 0.1, tier1Y + tier1H * 0.5);
+      ctx.lineTo(tier1X + tier1W * 0.9, tier1Y + tier1H * 0.5);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.strokeStyle = "rgba(255, 180, 220, 0.35)";
+      const tier2W = scale * 1.1;
+      const tier2H = scale * 0.35;
+      const tier2X = centerX - tier2W / 2;
+      const tier2Y = tier1Y - tier2H + scale * 0.02;
+      drawRoundedRect(tier2X, tier2Y, tier2W, tier2H, scale * 0.06);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      const scallopCount = 7;
+      const scallopSize = tier2W / scallopCount;
+      ctx.moveTo(tier2X, tier2Y + tier2H * 0.25);
+      for (let i = 0; i < scallopCount; i++) {
+        const sx = tier2X + i * scallopSize;
+        ctx.quadraticCurveTo(
+          sx + scallopSize / 2, 
+          tier2Y + tier2H * 0.25 + scale * 0.05, 
+          sx + scallopSize, 
+          tier2Y + tier2H * 0.25
+        );
+      }
+      ctx.stroke();
+
+      const candleCount = 5;
+      const candleW = scale * 0.035;
+      const candleH = scale * 0.15;
+      const spacing = tier2W / (candleCount + 1);
+
+      for (let i = 1; i <= candleCount; i++) {
+        const cx = tier2X + spacing * i;
+        const cy = tier2Y;
+
+        ctx.strokeStyle = "rgba(120, 220, 255, 0.5)";
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(cx - candleW / 2, cy - candleH, candleW, candleH);
+
+        const fTime = time * 2 + i * 1.5;
+        const flicker = Math.sin(fTime * 5) * (scale * 0.01);
+        const flameH = scale * 0.08 + Math.cos(fTime * 3) * (scale * 0.015);
+        const flameBaseY = cy - candleH - scale * 0.01;
+
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 + Math.sin(fTime * 4) * 0.2})`;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(cx, topY - scale * 0.08);
-        ctx.lineTo(cx, topY - scale * 0.2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(cx, topY - scale * 0.25, scale * 0.03, 0, Math.PI * 2);
+        ctx.moveTo(cx, flameBaseY);
+        ctx.bezierCurveTo(
+          cx - scale * 0.04, flameBaseY - flameH * 0.4,
+          cx - scale * 0.01 + flicker, flameBaseY - flameH,
+          cx, flameBaseY - flameH
+        );
+        ctx.bezierCurveTo(
+          cx + scale * 0.01 + flicker, flameBaseY - flameH,
+          cx + scale * 0.04, flameBaseY - flameH * 0.4,
+          cx, flameBaseY
+        );
         ctx.stroke();
       }
 
@@ -463,8 +523,8 @@ function scheduleAutoAdvance() {
 
   playTimer = window.setTimeout(() => {
     if (currentIndex >= sentences.length - 1) {
-      stopAutoPlay();
-      enterBirthdayScene();
+      stopAutoPlay({ keepAudio: true });
+      enterBirthdayScene({ keepAudio: true });
       return;
     }
 
@@ -478,17 +538,27 @@ function startAutoPlay() {
   iconPlay.classList.add("hidden");
   iconPause.classList.remove("hidden");
   playPauseBtn.setAttribute("aria-label", "Pause");
-  tryPlayAudio();
+
+  tryPlayAudio().then((ok) => {
+    if (!ok) {
+      isPlaying = false;
+      iconPlay.classList.remove("hidden");
+      iconPause.classList.add("hidden");
+      playPauseBtn.setAttribute("aria-label", "Play");
+    }
+  });
+
   scheduleAutoAdvance();
 }
 
-function stopAutoPlay() {
+function stopAutoPlay(options = {}) {
+  const { keepAudio = false } = options;
   if (!isPlaying) return;
   isPlaying = false;
   iconPlay.classList.remove("hidden");
   iconPause.classList.add("hidden");
   playPauseBtn.setAttribute("aria-label", "Play");
-  pauseAudio();
+  if (!keepAudio) pauseAudio();
   if (playTimer) {
     window.clearTimeout(playTimer);
     playTimer = null;
@@ -498,7 +568,7 @@ function stopAutoPlay() {
 function toggleAutoPlay() {
   if (mode !== "lyrics") return;
   if (isPlaying) {
-    stopAutoPlay();
+    stopAutoPlay({ keepAudio: false });
   } else {
     startAutoPlay();
   }
@@ -557,12 +627,15 @@ function setWishUI(state) {
   if (state === "wish") {
     wishDoneBtn.classList.remove("hidden");
     birthdayActionsEl.classList.add("hidden");
+    if (birthdayOpenLetterBtn) birthdayOpenLetterBtn.classList.add("hidden");
   } else if (state === "outro") {
     wishDoneBtn.classList.add("hidden");
     birthdayActionsEl.classList.remove("hidden");
+    if (birthdayOpenLetterBtn) birthdayOpenLetterBtn.classList.remove("hidden");
   } else {
     wishDoneBtn.classList.add("hidden");
     birthdayActionsEl.classList.add("hidden");
+    if (birthdayOpenLetterBtn) birthdayOpenLetterBtn.classList.add("hidden");
   }
 }
 
@@ -588,10 +661,11 @@ function handleKeyboard(e) {
   if (e.key === "ArrowRight" || e.key === " ") {
     e.preventDefault();
     advanceOrReveal();
+    if (isPlaying) scheduleAutoAdvance();
   } else if (e.key === "ArrowLeft") {
     e.preventDefault();
-    stopAutoPlay();
     showSentence(Math.max(0, currentIndex - 1));
+    if (isPlaying) scheduleAutoAdvance();
   }
 }
 
@@ -719,14 +793,18 @@ async function init() {
     renderLyrics(sentences);
     setMode("lyrics");
     showSentence(0, "auto");
+    startAutoPlay();
 
     prevBtn.addEventListener("click", () => {
-      stopAutoPlay();
       showSentence(Math.max(0, currentIndex - 1));
     });
     nextBtn.addEventListener("click", () => {
-      stopAutoPlay();
+      if (currentIndex >= sentences.length - 1) {
+        enterBirthdayScene({ keepAudio: true });
+        return;
+      }
       advanceOrReveal();
+      if (isPlaying) scheduleAutoAdvance();
     });
     playPauseBtn.addEventListener("click", toggleAutoPlay);
 
@@ -737,8 +815,8 @@ async function init() {
       if (!(li instanceof HTMLElement)) return;
       const idx = Number(li.dataset.index);
       if (Number.isNaN(idx)) return;
-      stopAutoPlay();
       showSentence(idx);
+      if (isPlaying) scheduleAutoAdvance();
     });
 
     birthdayReplayBtn?.addEventListener("click", () => {
@@ -751,8 +829,11 @@ async function init() {
       startAutoPlay();
     });
 
+    birthdayOpenLetterBtn?.addEventListener("click", () => {
+      openFullLetter();
+    });
 
-    toggleViewBtn.addEventListener("click", openFullLetter);
+
     closeLetterBtn.addEventListener("click", closeFullLetter);
     document.addEventListener("keydown", handleKeyboard);
 

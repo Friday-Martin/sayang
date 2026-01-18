@@ -421,13 +421,24 @@ body {
 }
 
 .wish-btn--ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#birthday-open-letter {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.birthday-actions .wish-btn {
+  min-width: 200px;
 }
 
 .birthday-actions {
   pointer-events: auto;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
   margin-top: auto;
 }
 

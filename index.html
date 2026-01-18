@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A letter for you, revealed one moment at a time.">
+    <title>To My Meimei</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="vignette"></div>
+
+        <audio id="bg-audio" preload="auto" loop>
+            <source src="we_are_one.mp3" type="audio/mpeg" />
+        </audio>
+
+
+
+        <div id="flow-control-panel" aria-label="Reading speed">
+            <label for="flow-speed-slider">Flow</label>
+            <input type="range" id="flow-speed-slider" min="0.6" max="1.4" step="0.02" value="0.82" />
+            <span id="flow-speed-value">0.82x</span>
+        </div>
+
+        <main class="stage-container">
+            <div id="lyric-stage" aria-live="polite">
+                <ul id="lyrics"></ul>
+            </div>
+
+            <section id="birthday-scene" class="birthday-scene hidden" aria-label="Birthday scene">
+                <canvas id="cake-canvas" class="cake-canvas" aria-hidden="true"></canvas>
+                <div class="birthday-overlay">
+                    <div class="birthday-text" id="birthday-text" aria-live="polite"></div>
+                    <button id="wish-done" class="wish-btn hidden" type="button">I've made my wish</button>
+                    <div class="birthday-actions hidden" id="birthday-actions">
+                        <button id="birthday-replay" class="wish-btn" type="button">Replay</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="ui-layer">
+            <div class="progress-wrapper">
+                <div id="progress-text" class="progress-label">0 / 0</div>
+                <div class="progress-track">
+                    <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <button id="prev-btn" class="control-btn nav-btn" aria-label="Previous sentence">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+                <button id="play-pause-btn" class="control-btn play-btn" aria-label="Play">
+                    <svg class="icon-play" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg class="icon-pause hidden" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+
+                <button id="next-btn" class="control-btn nav-btn" aria-label="Next sentence">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <button id="toggle-view-btn" class="toggle-text-btn">Read Full Letter</button>
+        </footer>
+
+        <section id="full-letter-view" class="letter-overlay hidden" aria-label="Full letter">
+            <button id="close-letter-btn" class="close-btn" aria-label="Close letter" type="button">&times;</button>
+            <div class="letter-scroll">
+                <div class="letter-paper" id="full-letter-content"></div>
+            </div>
+        </section>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
